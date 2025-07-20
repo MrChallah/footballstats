@@ -87,13 +87,6 @@
 
                 <!-- Statistics Table -->
                 <div class="space-y-1">
-                    <!-- Possession -->
-                    <div class="grid grid-cols-7 gap-1 items-center">
-                        <div id="team1-possession" onclick="editStat('team1-possession')" class="bg-blue-600 text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-blue-500 transition-colors">0%</div>
-                        <div class="col-span-5 bg-kick-gray text-kick-green text-center py-1 rounded text-sm font-bold">POSSESSION</div>
-                        <div id="team2-possession" onclick="editStat('team2-possession')" class="bg-blue-600 text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-blue-500 transition-colors">0%</div>
-                    </div>
-
                     <!-- Attempts -->
                     <div class="grid grid-cols-7 gap-1 items-center">
                         <div id="team1-attempts" onclick="editStat('team1-attempts')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
@@ -269,8 +262,6 @@
             team2Score: 0,
             matchStatus: 'FULL TIME',
             stats: {
-                'team1-possession': 0,
-                'team2-possession': 0,
                 'team1-attempts': 0,
                 'team2-attempts': 0,
                 'team1-ontarget': 0,
@@ -309,11 +300,7 @@
             for (const [statKey, value] of Object.entries(gameStats.stats)) {
                 const element = document.getElementById(statKey);
                 if (element) {
-                    if (statKey.includes('possession')) {
-                        element.textContent = value + '%';
-                    } else {
-                        element.textContent = value;
-                    }
+                    element.textContent = value;
                 }
             }
         }
@@ -365,12 +352,6 @@
         function adjustCurrentStat(delta) {
             if (currentEditingStat) {
                 currentStatValue = Math.max(0, currentStatValue + delta);
-                
-                // Special handling for possession percentages
-                if (currentEditingStat.includes('possession')) {
-                    currentStatValue = Math.min(100, currentStatValue);
-                }
-                
                 document.getElementById('current-stat-display').textContent = currentStatValue;
             }
         }
@@ -378,13 +359,6 @@
         function saveStat() {
             if (currentEditingStat) {
                 gameStats.stats[currentEditingStat] = currentStatValue;
-                
-                // Auto-adjust possession percentages to total 100%
-                if (currentEditingStat.includes('possession')) {
-                    const otherTeam = currentEditingStat.includes('team1') ? 'team2-possession' : 'team1-possession';
-                    gameStats.stats[otherTeam] = 100 - currentStatValue;
-                }
-                
                 updateDisplay();
                 hideAllControls();
             }
@@ -459,8 +433,6 @@
                 team2Score: 0,
                 matchStatus: 'FULL TIME',
                 stats: {
-                    'team1-possession': 0,
-                    'team2-possession': 0,
                     'team1-attempts': 0,
                     'team2-attempts': 0,
                     'team1-ontarget': 0,
@@ -532,7 +504,7 @@
         }
 
         function exportStats() {
-            const statsText = `MATCH STATISTICS\n${gameStats.team1Name} ${gameStats.team1Score} - ${gameStats.team2Score} ${gameStats.team2Name}\nStatus: ${gameStats.matchStatus}\n\nPossession: ${gameStats.stats['team1-possession']}% - ${gameStats.stats['team2-possession']}%\nAttempts: ${gameStats.stats['team1-attempts']} - ${gameStats.stats['team2-attempts']}\nOn Target: ${gameStats.stats['team1-ontarget']} - ${gameStats.stats['team2-ontarget']}\nCorners: ${gameStats.stats['team1-corners']} - ${gameStats.stats['team2-corners']}\nOffsides: ${gameStats.stats['team1-offsides']} - ${gameStats.stats['team2-offsides']}\nPasses: ${gameStats.stats['team1-passes']} - ${gameStats.stats['team2-passes']}\nCompleted: ${gameStats.stats['team1-completed']} - ${gameStats.stats['team2-completed']}\nFouls: ${gameStats.stats['team1-fouls']} - ${gameStats.stats['team2-fouls']}\nYellow Cards: ${gameStats.stats['team1-yellow']} - ${gameStats.stats['team2-yellow']}\nRed Cards: ${gameStats.stats['team1-red']} - ${gameStats.stats['team2-red']}`;
+            const statsText = `MATCH STATISTICS\n${gameStats.team1Name} ${gameStats.team1Score} - ${gameStats.team2Score} ${gameStats.team2Name}\nStatus: ${gameStats.matchStatus}\n\nAttempts: ${gameStats.stats['team1-attempts']} - ${gameStats.stats['team2-attempts']}\nOn Target: ${gameStats.stats['team1-ontarget']} - ${gameStats.stats['team2-ontarget']}\nCorners: ${gameStats.stats['team1-corners']} - ${gameStats.stats['team2-corners']}\nOffsides: ${gameStats.stats['team1-offsides']} - ${gameStats.stats['team2-offsides']}\nPasses: ${gameStats.stats['team1-passes']} - ${gameStats.stats['team2-passes']}\nCompleted: ${gameStats.stats['team1-completed']} - ${gameStats.stats['team2-completed']}\nFouls: ${gameStats.stats['team1-fouls']} - ${gameStats.stats['team2-fouls']}\nYellow Cards: ${gameStats.stats['team1-yellow']} - ${gameStats.stats['team2-yellow']}\nRed Cards: ${gameStats.stats['team1-red']} - ${gameStats.stats['team2-red']}`;
             
             navigator.clipboard.writeText(statsText).then(() => {
                 alert('Statistics copied to clipboard!');
