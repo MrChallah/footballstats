@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kenya Football Statistics Board</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'kick-green': '#53fc18',
+                        'kick-dark': '#0f0f23',
+                        'kick-gray': '#1a1a2e'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-transparent font-mono">
+    <!-- Main Statistics Container -->
+    <div class="relative w-screen h-screen overflow-hidden">
+        <!-- Statistics Board - Scalable Position -->
+        <div id="stats-container" class="absolute top-4 right-4 z-10 transition-all duration-300">
+            <div id="stats-board" class="bg-kick-dark border-2 border-kick-green rounded-xl p-2 shadow-2xl w-60">
+                
+                <!-- Header with Teams and Score -->
+                <div class="flex items-center justify-between mb-2">
+                    <!-- Team 1 -->
+                    <div class="flex items-center space-x-4">
+                        <div>
+                            <div id="team1-name" onclick="editTeamName('team1')" class="text-kick-green text-sm font-bold cursor-pointer hover:text-white transition-colors text-center">MOMBASA</div>
+                        </div>
+                    </div>
+
+                    <!-- Score and Status -->
+                    <div class="text-center">
+                        <div class="bg-yellow-500 text-black px-3 py-1 rounded-lg font-bold text-xs mb-2" id="match-status" onclick="toggleStatusMenu()">FULL TIME</div>
+                        
+                        <!-- Score Display Container - Fixed positioning -->
+                        <div class="relative">
+                            <div class="flex items-center justify-center space-x-2">
+                                <div id="team1-score" onclick="toggleScoreControls('team1')" class="text-white text-3xl font-bold cursor-pointer hover:text-kick-green transition-colors">0</div>
+                                <div class="text-kick-green text-2xl font-bold">-</div>
+                                <div id="team2-score" onclick="toggleScoreControls('team2')" class="text-white text-3xl font-bold cursor-pointer hover:text-kick-green transition-colors">0</div>
+                            </div>
+                            
+                            <!-- Score Controls (Hidden by default) - Absolute positioned to not affect layout -->
+                            <div id="score-controls" class="hidden absolute top-12 left-1/2 transform -translate-x-1/2 flex items-center space-x-1 bg-kick-dark border border-kick-green rounded-lg px-2 py-1">
+                                <div class="flex items-center space-x-1">
+                                    <button id="team1-minus" onclick="changeScore('team1', -1)" class="bg-red-600 hover:bg-red-700 text-white w-6 h-6 rounded-full font-bold text-xs">-</button>
+                                    <button id="team1-plus" onclick="changeScore('team1', 1)" class="bg-kick-green hover:bg-green-400 text-kick-dark w-6 h-6 rounded-full font-bold text-xs">+</button>
+                                </div>
+                                <span class="text-kick-green mx-2 font-bold text-sm">|</span>
+                                <div class="flex items-center space-x-1">
+                                    <button id="team2-minus" onclick="changeScore('team2', -1)" class="bg-red-600 hover:bg-red-700 text-white w-6 h-6 rounded-full font-bold text-xs">-</button>
+                                    <button id="team2-plus" onclick="changeScore('team2', 1)" class="bg-kick-green hover:bg-green-400 text-kick-dark w-6 h-6 rounded-full font-bold text-xs">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Menu (Hidden by default) -->
+                        <div id="status-menu" class="absolute top-10 left-1/2 transform -translate-x-1/2 bg-kick-dark border border-kick-green rounded hidden min-w-[120px] z-20">
+                            <button onclick="setStatus('1ST HALF')" class="block w-full text-left px-3 py-2 text-white hover:bg-kick-gray text-sm">1ST HALF</button>
+                            <button onclick="setStatus('2ND HALF')" class="block w-full text-left px-3 py-2 text-white hover:bg-kick-gray text-sm">2ND HALF</button>
+                            <button onclick="setStatus('HALF TIME')" class="block w-full text-left px-3 py-2 text-white hover:bg-kick-gray text-sm">HALF TIME</button>
+                            <button onclick="setStatus('FULL TIME')" class="block w-full text-left px-3 py-2 text-white hover:bg-kick-gray text-sm">FULL TIME</button>
+                            <button onclick="setStatus('OVERTIME')" class="block w-full text-left px-3 py-2 text-white hover:bg-kick-gray text-sm">OVERTIME</button>
+                            <button onclick="setStatus('PENALTIES')" class="block w-full text-left px-3 py-2 text-white hover:bg-kick-gray text-sm">PENALTIES</button>
+                        </div>
+                    </div>
+
+                    <!-- Team 2 -->
+                    <div class="flex items-center space-x-4">
+                        <div>
+                            <div id="team2-name" onclick="editTeamName('team2')" class="text-kick-green text-sm font-bold cursor-pointer hover:text-white transition-colors text-center">MATATA</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Match Statistics Header -->
+                <div class="bg-gradient-to-r from-kick-green to-kick-green text-kick-dark text-center py-1 rounded-lg mb-2">
+                    <h2 class="text-sm font-bold">MATCH STATISTICS</h2>
+                </div>
+
+                <!-- Statistics Table -->
+                <div class="space-y-1">
+                    <!-- Possession -->
+                    <div class="grid grid-cols-7 gap-1 items-center">
+                        <div id="team1-possession" onclick="editStat('team1-possession')" class="bg-blue-600 text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-blue-500 transition-colors">0%</div>
+                        <div class="col-span-5 bg-kick-gray text-kick-green text-center py-1 rounded text-sm font-bold">POSSESSION</div>
+                        <div id="team2-possession" onclick="editStat('team2-possession')" class="bg-blue-600 text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-blue-500 transition-colors">0%</div>
+                    </div>
+
+                    <!-- Attempts -->
+                    <div class="grid grid-cols-7 gap-1 items-center">
+                        <div id="team1-attempts" onclick="editStat('team1-attempts')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
+                        <div class="col-span-5 bg-kick-gray text-kick-green text-center py-1 rounded text-sm font-bold">ATTEMPTS</div>
+                        <div id="team2-attempts" onclick="editStat('team2-attempts')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
+                    </div>
+
+                    <!-- On Target -->
+                    <div class="grid grid-cols-7 gap-1 items-center">
+                        <div id="team1-ontarget" onclick="editStat('team1-ontarget')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
+                        <div class="col-span-5 bg-kick-gray text-kick-green text-center py-1 rounded text-sm font-bold">ON TARGET</div>
+                        <div id="team2-ontarget" onclick="editStat('team2-ontarget')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
+                    </div>
+
+                    <!-- Corners -->
+                    <div class="grid grid-cols-7 gap-1 items-center">
+                        <div id="team1-corners" onclick="editStat('team1-corners')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
+                        <div class="col-span-5 bg-kick-gray text-kick-green text-center py-1 rounded text-sm font-bold">CORNERS</div>
+                        <div id="team2-corners" onclick="editStat('team2-corners')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
+                    </div>
+
+                    <!-- Offsides -->
+                    <div class="grid grid-cols-7 gap-1 items-center">
+                        <div id="team1-offsides" onclick="editStat('team1-offsides')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
+                        <div class="col-span-5 bg-kick-gray text-kick-green text-center py-1 rounded text-sm font-bold">OFFSIDES</div>
+                        <div id="team2-offsides" onclick="editStat('team2-offsides')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
+                    </div>
+
+                    <!-- Passes -->
+                    <div class="grid grid-cols-7 gap-1 items-center">
+                        <div id="team1-passes" onclick="editStat('team1-passes')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
+                        <div class="col-span-5 bg-kick-gray text-kick-green text-center py-1 rounded text-sm font-bold">PASSES</div>
+                        <div id="team2-passes" onclick="editStat('team2-passes')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
+                    </div>
+
+                    <!-- Completed -->
+                    <div class="grid grid-cols-7 gap-1 items-center">
+                        <div id="team1-completed" onclick="editStat('team1-completed')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
+                        <div class="col-span-5 bg-kick-gray text-kick-green text-center py-1 rounded text-sm font-bold">COMPLETED</div>
+                        <div id="team2-completed" onclick="editStat('team2-completed')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
+                    </div>
+
+                    <!-- Fouls Committed -->
+                    <div class="grid grid-cols-7 gap-1 items-center">
+                        <div id="team1-fouls" onclick="editStat('team1-fouls')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
+                        <div class="col-span-5 bg-kick-gray text-kick-green text-center py-1 rounded text-sm font-bold">FOULS COMMITTED</div>
+                        <div id="team2-fouls" onclick="editStat('team2-fouls')" class="bg-kick-gray text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-gray-600 transition-colors">0</div>
+                    </div>
+
+                    <!-- Yellow Cards -->
+                    <div class="grid grid-cols-7 gap-1 items-center">
+                        <div id="team1-yellow" onclick="editStat('team1-yellow')" class="bg-yellow-500 text-black text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-yellow-400 transition-colors">0</div>
+                        <div class="col-span-5 bg-kick-gray text-kick-green text-center py-1 rounded text-sm font-bold">YELLOW CARDS</div>
+                        <div id="team2-yellow" onclick="editStat('team2-yellow')" class="bg-yellow-500 text-black text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-yellow-400 transition-colors">0</div>
+                    </div>
+
+                    <!-- Red Cards -->
+                    <div class="grid grid-cols-7 gap-1 items-center">
+                        <div id="team1-red" onclick="editStat('team1-red')" class="bg-red-600 text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-red-500 transition-colors">0</div>
+                        <div class="col-span-5 bg-kick-gray text-kick-green text-center py-1 rounded text-sm font-bold">RED CARDS</div>
+                        <div id="team2-red" onclick="editStat('team2-red')" class="bg-red-600 text-white text-center py-1 rounded text-sm font-bold cursor-pointer hover:bg-red-500 transition-colors">0</div>
+                    </div>
+                </div>
+
+                <!-- Control Panel -->
+                <div id="control-panel" class="hidden mt-2 text-center space-x-1">
+                    <button onclick="resetStats()" class="bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded text-xs font-bold">RESET</button>
+                    <button onclick="hideStatBoard()" class="bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded text-xs font-bold" id="hide-btn">HIDE</button>
+                    <button onclick="toggleLayout()" class="bg-kick-green hover:bg-green-400 text-kick-dark px-2 py-1 rounded text-xs font-bold" id="layout-btn">EXPAND</button>
+                    <button onclick="exportStats()" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-bold">EXPORT</button>
+                </div>
+
+                <!-- Number Input Controls (Hidden by default) -->
+                <div id="number-controls" class="hidden mt-2 text-center">
+                    <div class="text-kick-green text-xs font-bold mb-1">EDIT VALUE</div>
+                    <div class="flex justify-center items-center space-x-1 mb-2">
+                        <button onclick="adjustCurrentStat(-10)" class="bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded text-xs font-bold w-8">-10</button>
+                        <button onclick="adjustCurrentStat(-5)" class="bg-red-500 hover:bg-red-600 text-white px-1 py-1 rounded text-xs font-bold w-7">-5</button>
+                        <button onclick="adjustCurrentStat(-1)" class="bg-red-400 hover:bg-red-500 text-white px-1 py-1 rounded text-xs font-bold w-6">-1</button>
+                        <span id="current-stat-display" class="text-white text-lg font-bold min-w-[2rem] text-center mx-1">0</span>
+                        <button onclick="adjustCurrentStat(1)" class="bg-kick-green hover:bg-green-400 text-kick-dark px-1 py-1 rounded text-xs font-bold w-6">+1</button>
+                        <button onclick="adjustCurrentStat(5)" class="bg-green-500 hover:bg-green-600 text-white px-1 py-1 rounded text-xs font-bold w-7">+5</button>
+                        <button onclick="adjustCurrentStat(10)" class="bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded text-xs font-bold w-8">+10</button>
+                    </div>
+                    <div class="space-x-1">
+                        <button onclick="saveStat()" class="bg-kick-green hover:bg-green-400 text-kick-dark px-2 py-1 rounded text-xs font-bold">SAVE</button>
+                        <button onclick="cancelEdit()" class="bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded text-xs font-bold">CANCEL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- On-Screen Keyboard -->
+        <div id="keyboard-overlay" class="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-30 hidden">
+            <div class="bg-kick-dark border-2 border-kick-green rounded-xl p-6 max-w-lg">
+                <div class="text-center mb-4">
+                    <div class="text-kick-green text-lg font-bold">EDIT TEAM NAME</div>
+                    <input id="team-name-input" type="text" class="bg-kick-gray text-white text-center text-xl font-bold px-4 py-2 mt-2 rounded border border-kick-green focus:outline-none focus:border-white" maxlength="15" readonly>
+                </div>
+                
+                <!-- Keyboard -->
+                <div class="space-y-2">
+                    <!-- Row 1 -->
+                    <div class="flex justify-center space-x-1">
+                        <button onclick="typeChar('Q')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">Q</button>
+                        <button onclick="typeChar('W')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">W</button>
+                        <button onclick="typeChar('E')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">E</button>
+                        <button onclick="typeChar('R')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">R</button>
+                        <button onclick="typeChar('T')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">T</button>
+                        <button onclick="typeChar('Y')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">Y</button>
+                        <button onclick="typeChar('U')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">U</button>
+                        <button onclick="typeChar('I')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">I</button>
+                        <button onclick="typeChar('O')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">O</button>
+                        <button onclick="typeChar('P')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">P</button>
+                    </div>
+                    
+                    <!-- Row 2 -->
+                    <div class="flex justify-center space-x-1">
+                        <button onclick="typeChar('A')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">A</button>
+                        <button onclick="typeChar('S')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">S</button>
+                        <button onclick="typeChar('D')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">D</button>
+                        <button onclick="typeChar('F')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">F</button>
+                        <button onclick="typeChar('G')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">G</button>
+                        <button onclick="typeChar('H')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">H</button>
+                        <button onclick="typeChar('J')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">J</button>
+                        <button onclick="typeChar('K')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">K</button>
+                        <button onclick="typeChar('L')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">L</button>
+                    </div>
+                    
+                    <!-- Row 3 -->
+                    <div class="flex justify-center space-x-1">
+                        <button onclick="typeChar('Z')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">Z</button>
+                        <button onclick="typeChar('X')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">X</button>
+                        <button onclick="typeChar('C')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">C</button>
+                        <button onclick="typeChar('V')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">V</button>
+                        <button onclick="typeChar('B')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">B</button>
+                        <button onclick="typeChar('N')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">N</button>
+                        <button onclick="typeChar('M')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">M</button>
+                        <button onclick="typeChar(' ')" class="bg-kick-gray hover:bg-gray-600 text-white w-16 h-10 rounded font-bold">SPACE</button>
+                    </div>
+                    
+                    <!-- Numbers -->
+                    <div class="flex justify-center space-x-1">
+                        <button onclick="typeChar('1')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">1</button>
+                        <button onclick="typeChar('2')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">2</button>
+                        <button onclick="typeChar('3')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">3</button>
+                        <button onclick="typeChar('4')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">4</button>
+                        <button onclick="typeChar('5')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">5</button>
+                        <button onclick="typeChar('6')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">6</button>
+                        <button onclick="typeChar('7')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">7</button>
+                        <button onclick="typeChar('8')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">8</button>
+                        <button onclick="typeChar('9')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">9</button>
+                        <button onclick="typeChar('0')" class="bg-kick-gray hover:bg-gray-600 text-white w-10 h-10 rounded font-bold">0</button>
+                    </div>
+                    
+                    <!-- Control Buttons -->
+                    <div class="flex justify-center space-x-2 mt-4">
+                        <button onclick="backspace()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold">BACKSPACE</button>
+                        <button onclick="clearInput()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded font-bold">CLEAR</button>
+                        <button onclick="saveTeamName()" class="bg-kick-green hover:bg-green-400 text-kick-dark px-4 py-2 rounded font-bold">SAVE</button>
+                        <button onclick="cancelTeamEdit()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-bold">CANCEL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameStats = {
+            team1Name: 'MOMBASA',
+            team2Name: 'MATATA',
+            team1Score: 0,
+            team2Score: 0,
+            matchStatus: 'FULL TIME',
+            stats: {
+                'team1-possession': 0,
+                'team2-possession': 0,
+                'team1-attempts': 0,
+                'team2-attempts': 0,
+                'team1-ontarget': 0,
+                'team2-ontarget': 0,
+                'team1-corners': 0,
+                'team2-corners': 0,
+                'team1-offsides': 0,
+                'team2-offsides': 0,
+                'team1-passes': 0,
+                'team2-passes': 0,
+                'team1-completed': 0,
+                'team2-completed': 0,
+                'team1-fouls': 0,
+                'team2-fouls': 0,
+                'team1-yellow': 0,
+                'team2-yellow': 0,
+                'team1-red': 0,
+                'team2-red': 0
+            },
+            overlayVisible: true,
+            isExpanded: false
+        };
+
+        let currentEditingTeam = null;
+        let currentEditingStat = null;
+        let currentStatValue = 0;
+
+        function updateDisplay() {
+            document.getElementById('team1-name').textContent = gameStats.team1Name;
+            document.getElementById('team2-name').textContent = gameStats.team2Name;
+            document.getElementById('team1-score').textContent = gameStats.team1Score;
+            document.getElementById('team2-score').textContent = gameStats.team2Score;
+            document.getElementById('match-status').textContent = gameStats.matchStatus;
+
+            // Update all statistics
+            for (const [statKey, value] of Object.entries(gameStats.stats)) {
+                const element = document.getElementById(statKey);
+                if (element) {
+                    if (statKey.includes('possession')) {
+                        element.textContent = value + '%';
+                    } else {
+                        element.textContent = value;
+                    }
+                }
+            }
+        }
+
+        function hideAllControls() {
+            document.getElementById('score-controls').classList.add('hidden');
+            document.getElementById('status-menu').classList.add('hidden');
+            document.getElementById('control-panel').classList.add('hidden');
+            document.getElementById('number-controls').classList.add('hidden');
+        }
+
+        function toggleScoreControls(team) {
+            hideAllControls();
+            document.getElementById('score-controls').classList.remove('hidden');
+            document.getElementById('control-panel').classList.remove('hidden');
+        }
+
+        function changeScore(team, delta) {
+            if (team === 'team1') {
+                gameStats.team1Score = Math.max(0, gameStats.team1Score + delta);
+            } else {
+                gameStats.team2Score = Math.max(0, gameStats.team2Score + delta);
+            }
+            updateDisplay();
+        }
+
+        function toggleStatusMenu() {
+            hideAllControls();
+            document.getElementById('status-menu').classList.remove('hidden');
+            document.getElementById('control-panel').classList.remove('hidden');
+        }
+
+        function setStatus(status) {
+            gameStats.matchStatus = status;
+            hideAllControls();
+            updateDisplay();
+        }
+
+        function editStat(statId) {
+            hideAllControls();
+            currentEditingStat = statId;
+            currentStatValue = gameStats.stats[statId];
+            
+            document.getElementById('current-stat-display').textContent = currentStatValue;
+            document.getElementById('number-controls').classList.remove('hidden');
+            document.getElementById('control-panel').classList.remove('hidden');
+        }
+
+        function adjustCurrentStat(delta) {
+            if (currentEditingStat) {
+                currentStatValue = Math.max(0, currentStatValue + delta);
+                
+                // Special handling for possession percentages
+                if (currentEditingStat.includes('possession')) {
+                    currentStatValue = Math.min(100, currentStatValue);
+                }
+                
+                document.getElementById('current-stat-display').textContent = currentStatValue;
+            }
+        }
+
+        function saveStat() {
+            if (currentEditingStat) {
+                gameStats.stats[currentEditingStat] = currentStatValue;
+                
+                // Auto-adjust possession percentages to total 100%
+                if (currentEditingStat.includes('possession')) {
+                    const otherTeam = currentEditingStat.includes('team1') ? 'team2-possession' : 'team1-possession';
+                    gameStats.stats[otherTeam] = 100 - currentStatValue;
+                }
+                
+                updateDisplay();
+                hideAllControls();
+            }
+        }
+
+        function cancelEdit() {
+            hideAllControls();
+            currentEditingStat = null;
+            currentStatValue = 0;
+        }
+
+        // Team Name Editing Functions
+        function editTeamName(team) {
+            hideAllControls();
+            currentEditingTeam = team;
+            const keyboardOverlay = document.getElementById('keyboard-overlay');
+            const input = document.getElementById('team-name-input');
+            
+            if (team === 'team1') {
+                input.value = gameStats.team1Name;
+            } else {
+                input.value = gameStats.team2Name;
+            }
+            
+            keyboardOverlay.classList.remove('hidden');
+        }
+
+        function typeChar(char) {
+            const input = document.getElementById('team-name-input');
+            if (input.value.length < 15) {
+                input.value += char;
+            }
+        }
+
+        function backspace() {
+            const input = document.getElementById('team-name-input');
+            input.value = input.value.slice(0, -1);
+        }
+
+        function clearInput() {
+            const input = document.getElementById('team-name-input');
+            input.value = '';
+        }
+
+        function saveTeamName() {
+            const input = document.getElementById('team-name-input');
+            const newName = input.value.trim().toUpperCase();
+            
+            if (newName.length > 0) {
+                if (currentEditingTeam === 'team1') {
+                    gameStats.team1Name = newName;
+                } else {
+                    gameStats.team2Name = newName;
+                }
+                updateDisplay();
+            }
+            
+            cancelTeamEdit();
+        }
+
+        function cancelTeamEdit() {
+            const keyboardOverlay = document.getElementById('keyboard-overlay');
+            keyboardOverlay.classList.add('hidden');
+            currentEditingTeam = null;
+        }
+
+        function resetStats() {
+            gameStats = {
+                team1Name: 'MOMBASA',
+                team2Name: 'MATATA',
+                team1Score: 0,
+                team2Score: 0,
+                matchStatus: 'FULL TIME',
+                stats: {
+                    'team1-possession': 0,
+                    'team2-possession': 0,
+                    'team1-attempts': 0,
+                    'team2-attempts': 0,
+                    'team1-ontarget': 0,
+                    'team2-ontarget': 0,
+                    'team1-corners': 0,
+                    'team2-corners': 0,
+                    'team1-offsides': 0,
+                    'team2-offsides': 0,
+                    'team1-passes': 0,
+                    'team2-passes': 0,
+                    'team1-completed': 0,
+                    'team2-completed': 0,
+                    'team1-fouls': 0,
+                    'team2-fouls': 0,
+                    'team1-yellow': 0,
+                    'team2-yellow': 0,
+                    'team1-red': 0,
+                    'team2-red': 0
+                },
+                overlayVisible: true,
+                isExpanded: false
+            };
+            
+            // Reset to compact layout
+            const container = document.getElementById('stats-container');
+            const board = document.getElementById('stats-board');
+            const btn = document.getElementById('layout-btn');
+            container.className = 'absolute top-4 right-4 z-10 transition-all duration-300';
+            board.className = 'bg-kick-dark border-2 border-kick-green rounded-xl p-2 shadow-2xl w-60';
+            btn.textContent = 'EXPAND';
+            
+            updateDisplay();
+            hideAllControls();
+        }
+
+        function hideStatBoard() {
+            const mainBoard = document.querySelector('.bg-kick-dark.border-2.border-kick-green');
+            const btn = document.getElementById('hide-btn');
+            
+            if (gameStats.overlayVisible) {
+                mainBoard.style.opacity = '0.1';
+                btn.textContent = 'SHOW';
+                gameStats.overlayVisible = false;
+            } else {
+                mainBoard.style.opacity = '1';
+                btn.textContent = 'HIDE';
+                gameStats.overlayVisible = true;
+            }
+        }
+
+        function toggleLayout() {
+            const container = document.getElementById('stats-container');
+            const board = document.getElementById('stats-board');
+            const btn = document.getElementById('layout-btn');
+            
+            if (gameStats.isExpanded) {
+                // Switch to compact mode (top-right)
+                container.className = 'absolute top-4 right-4 z-10 transition-all duration-300';
+                board.className = 'bg-kick-dark border-2 border-kick-green rounded-xl p-2 shadow-2xl w-60';
+                btn.textContent = 'EXPAND';
+                gameStats.isExpanded = false;
+            } else {
+                // Switch to expanded mode (center, much larger)
+                container.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 transition-all duration-300';
+                board.className = 'bg-kick-dark border-2 border-kick-green rounded-xl p-8 shadow-2xl w-[800px] min-w-[800px]';
+                btn.textContent = 'COMPACT';
+                gameStats.isExpanded = true;
+            }
+        }
+
+        function exportStats() {
+            const statsText = `MATCH STATISTICS\n${gameStats.team1Name} ${gameStats.team1Score} - ${gameStats.team2Score} ${gameStats.team2Name}\nStatus: ${gameStats.matchStatus}\n\nPossession: ${gameStats.stats['team1-possession']}% - ${gameStats.stats['team2-possession']}%\nAttempts: ${gameStats.stats['team1-attempts']} - ${gameStats.stats['team2-attempts']}\nOn Target: ${gameStats.stats['team1-ontarget']} - ${gameStats.stats['team2-ontarget']}\nCorners: ${gameStats.stats['team1-corners']} - ${gameStats.stats['team2-corners']}\nOffsides: ${gameStats.stats['team1-offsides']} - ${gameStats.stats['team2-offsides']}\nPasses: ${gameStats.stats['team1-passes']} - ${gameStats.stats['team2-passes']}\nCompleted: ${gameStats.stats['team1-completed']} - ${gameStats.stats['team2-completed']}\nFouls: ${gameStats.stats['team1-fouls']} - ${gameStats.stats['team2-fouls']}\nYellow Cards: ${gameStats.stats['team1-yellow']} - ${gameStats.stats['team2-yellow']}\nRed Cards: ${gameStats.stats['team1-red']} - ${gameStats.stats['team2-red']}`;
+            
+            navigator.clipboard.writeText(statsText).then(() => {
+                alert('Statistics copied to clipboard!');
+            }).catch(() => {
+                alert('Failed to copy statistics');
+            });
+        }
+
+        // Close controls when clicking outside
+        document.addEventListener('click', function(event) {
+            const mainBoard = document.getElementById('stats-board');
+            const keyboardOverlay = document.getElementById('keyboard-overlay');
+            
+            if (!keyboardOverlay.classList.contains('hidden')) {
+                return;
+            }
+            
+            if (!mainBoard.contains(event.target)) {
+                hideAllControls();
+            }
+        });
+
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html> 
